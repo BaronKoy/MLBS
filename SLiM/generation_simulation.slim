@@ -1,0 +1,96 @@
+// Simulation of Cage experiment Reuter lab 2021 - part 2 (cage population 56 gen simulation)
+
+// -----Intialisation & parameter setup-----
+
+initialize() 
+{	// Nucleotide based WF model
+	initializeSLiMModelType('WF');
+	initializeSLiMOptions(nucleotideBased=T);
+	initializeAncestralNucleotides('/data/home/bty565/simulations/inputs/fasta/GCA_000001215.4_3R.fna'); // Genome assembly Release 6 plus ISO1 MT
+	initializeTreeSeq();
+
+	// Assign mutation coefficient values
+	defineConstant('Dco', runif(1, 1, 5)); // use Dco for variable value
+	defineConstant('Sco', runif(1, 0, 0.25)); // use Sco for variable value
+	initializeMutationTypeNuc("m1", 20, 'f', 0.001); // overdominance
+	initializeMutationTypeNuc("m2", 0.5, 'f', 0); // neutral
+	
+	// Assign genomic element and weights of mutations
+	initializeGenomicElementType("g1", c(m1, m2), c(0.0, 1.0), mmJukesCantor(0.0)); // neutral
+	initializeGenomicElementType('g2', c(m1, m2), c(1.0, 0.0), mmJukesCantor(0.0)); // overdominance at g2 - 3R:18479921
+	initializeGenomicElementType('g3', c(m1, m2), c(0.0, 1.0), mmJukesCantor(0.0)); // neutral
+	
+	// Chromosome 3R length 32079331
+	initializeGenomicElement(g1, 0, 18479919);
+	initializeGenomicElement(g2, 18479920, 18479921); // Position 18479921
+	initializeGenomicElement(g3, 18479922, 32079330);
+	initializeRecombinationRate(1.71642e-08);
+	
+	// Retain fixed alleles in output file
+	m1.convertToSubstitution = F;
+	m2.convertToSubstitution = F;
+}
+
+// -----Cage simulation run-----
+
+// Create two populations from DGRP fixed lines
+1 early() 
+{
+	sim.addSubpop('p1', 48);
+	p1.genomes.readFromVCF('/data/home/bty565/simulations/outputs/L_pop/cage_1/vcfs/L_start.vcf');
+}
+
+2 late()
+{
+	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/L_pop/cage_1/vcfs/gen2.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/L_pop/cage_1/trees/L_gen2.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/L_pop/cage_1/ms/CEU_neu_gen2.ms");
+}
+
+4 late()
+{	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/L_pop/cage_1/vcfs/gen4.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/L_pop/cage_1/trees/L_gen4.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/L_pop/cage_1/ms/CEU_neu_gen4.ms");
+}
+
+8 late()
+{	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/L_pop/cage_1/vcfs/gen8.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/L_pop/cage_1/trees/L_gen8.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/L_pop/cage_1/ms/CEU_neu_gen8.ms");
+}
+
+12 late()
+{	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/L_pop/cage_1/vcfs/gen12.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/L_pop/cage_1/trees/L_gen12.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/L_pop/cage_1/ms/CEU_neu_gen12.ms");
+}
+
+20 late()
+{	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/L_pop/cage_1/vcfs/gen20.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/L_pop/cage_1/trees/L_gen20.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/L_pop/cage_1/ms/CEU_neu_gen20.ms");
+}
+
+28 late()
+{	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/L_pop/cage_1/vcfs/gen28.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/L_pop/cage_1/trees/L_gen28.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/L_pop/cage_1/ms/CEU_neu_gen28.ms");
+}
+
+36 late()
+{	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/L_pop/cage_1/vcfs/gen36.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/L_pop/cage_1/trees/L_gen36.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/L_pop/cage_1/ms/CEU_neu_gen36.ms");
+}
+
+44 late()
+{	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/L_pop/cage_1/vcfs/gen44.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/L_pop/cage_1/trees/L_gen44.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/L_pop/cage_1/ms/CEU_neu_gen44.ms");
+}
+56 late()
+{	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/L_pop/cage_1/vcfs/gen56.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/L_pop/cage_1/trees/L_gen56.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/L_pop/cage_1/ms/CEU_neu_gen56.ms");
+	sim.simulationFinished();
+}
