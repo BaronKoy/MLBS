@@ -20,7 +20,8 @@ initialize()
 	initializeGenomicElementType('g2', c(m1, m2), c(1.0, 0.0), mmJukesCantor(0.0)); // overdominance region
 	initializeGenomicElementType('g3', c(m1, m2), c(0.0, 1.0), mmJukesCantor(0.0)); // neutral region
 	
-// THE CODE BLOCK BELOW WILL HAVE TO BE CHANGED IF WORKING WITH CHROMOSOME Z - NOTE THAT 0 INDEXING IS USED - Chromosome 26 length 10067174
+	// THE CODE BLOCK BELOW WILL HAVE TO BE CHANGED IF WORKING WITH CHROMOSOME Z - NOTE THAT 0 INDEXING IS USED - 
+	// Chromosome 26 length 10067174
 	initializeGenomicElement(g1, 0, 18479919); // Adjust this value to align with the beginning of the focal region
 	initializeGenomicElement(g2, 18479920, 18479921); // Position 18479921 with 0 indexing
 	initializeGenomicElement(g3, 18479922, 32079330);
