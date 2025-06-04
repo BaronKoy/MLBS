@@ -6,8 +6,7 @@ initialize()
 {	// Create a nucleotide based simulation model which allows the use of Bicyclus anynana genomes/nucleotides as input
 	initializeSLiMModelType('WF');
 	initializeSLiMOptions(nucleotideBased=T);
-	initializeAncestralNucleotides('/home/baron/Documents/PhD/Yao_data/fasta/NC_06910.1.fna'); //Chromosome 26 from Bicyclus anynana genome assembly ilBicAnyn1.1
-// The nucleotide ID on line 9 can be changed to NC_069110.1.fna to use chromosome Z instead of chromosome 26
+	initializeAncestralNucleotides('/home/baron/Documents/PhD/Yao_data/fasta/NC_06910.1.fna'); // Chromosome 26 from Bicyclus anynana genome assembly ilBicAnyn1.1 - The nucleotide ID on line 9 can be changed to NC_069110.1.fna to use chromosome Z instead of chromosome 26
 	initializeTreeSeq();
 
 	// Assign mutation coefficient values - this will be used to simulate selection/neutrality within our selected regions of interest
