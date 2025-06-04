@@ -3,7 +3,8 @@
 // -----INITIALISATION & PARAMETER SETUP-----
 
 initialize()
-{	// Create a nucleotide based simulation model which allows the use of Bicyclus anynana genomes/nucleotides as input
+{	
+	// Create a nucleotide based simulation model which allows the use of Bicyclus anynana genomes/nucleotides as input
 	initializeSLiMModelType('WF');
 	initializeSLiMOptions(nucleotideBased=T);
 	initializeAncestralNucleotides('/home/baron/Documents/PhD/Yao_data/fasta/NC_06910.1.fna'); // Chromosome 26 from Bicyclus anynana genome assembly ilBicAnyn1.1 - The nucleotide ID on line 9 can be changed to NC_069110.1.fna to use chromosome Z instead of chromosome 26
