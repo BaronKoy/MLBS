@@ -33,7 +33,15 @@ cd ac_files/
 for x in *.gz ; do sed -i 's/saf_MLE/d' "$x" ; done
 echo 'Output file created!'
 
-#TODO...read into 
+#Read into each file and multiple AF by 96
+for y in *.gz ; do while read -r x ; do echo | awk -v af="$x" 'BEGIN {print af * 96}' ; done < "$y" > "$y"_minor.txt ; done
+#TODO...test line of code above
+
+#Read into each output from step above and substract from 96 and output to a new file
+for y in *_minor.txt ; do while read -r x ; do echo | awk -v af="$x" 'BEGIN {print 96 - af}' ; done < "$y" > "$y"_major.txt ; done
+
+#Paste major and minor files together and convert tab into space
+#TODO....
 
 #Code blocks below used for all Cages
 """
