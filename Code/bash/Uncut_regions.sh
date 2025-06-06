@@ -43,6 +43,9 @@ for y in *_minor.txt ; do while read -r x ; do echo | awk -v af="$x" 'BEGIN {pri
 #Paste major and minor files together and convert tab into space
 #TODO....
 
+#Merges all text files together
+for f in *.txt; do (cat "${f}"; echo) >> finalfile.txt; done
+
 #Code blocks below used for all Cages
 """
 # Extract colum 2 (Position) & column 11 (minor allele frequency) and output to new file
