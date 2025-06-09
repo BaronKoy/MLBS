@@ -23,6 +23,9 @@ echo 'Running ngsPool......'
 for x in *.pileup ; do julia ~/software/ngsJulia/ngsPool/ngsPool.jl --fin "$x" --fout ngs_output/"$x".out.gz --nChroms 96 ; done
 echo Allele frequencies calculated!
 
+#-----TODO-----
+#This is the step in which the filtering step should be coded in! Make sure that is done by the notes in the notes file and then you can continue with the next steps for the code
+
 #Extract column 11 (minor allele frequency) and output to new file
 cd ngs_output/
 mkdir ac_files
