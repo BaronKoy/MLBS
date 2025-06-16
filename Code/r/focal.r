@@ -8,7 +8,7 @@ library(dplyr)
 
 options(scipen = 999) # prevent scientific notation for genomic position on x axis
 
-population <- read_csv('/home/baron/Documents/PhD/ML_balancingselection_data/plot_data/Cage_1.csv', # Change file as required
+population <- read_csv('/home/baron/Documents/PhD/Data/plot_data/Cage_1.csv', # Change "Cage_1.csv" string as required
                    col_types = cols(Position = col_character(), Allele_frequency = col_number(),
                                     Generation = col_number()))
 #population$Positioncolour <- rep('black', nrow(population)) # If filtering is required
