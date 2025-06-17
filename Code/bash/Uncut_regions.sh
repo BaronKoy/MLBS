@@ -30,7 +30,7 @@ echo Allele frequencies calculated!
 cd ngs_output/
 mkdir ac_files
 echo 'Extracting 11 for position and minor allele frequency......'
-for x in *.out.gz ; do zcat  | awk '{print$11}' > ac_files/"$x" ; done
+for x in *.out.gz ; do zcat "$x" | awk '{print$11}' > ac_files/"$x" ; done
 cd ac_files/
 #Remove saf_MLE string from the first line of each file. Removes the whole line 
 for x in *.gz ; do sed -i 's/saf_MLE/d' "$x" ; done
