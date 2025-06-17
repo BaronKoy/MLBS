@@ -8,7 +8,7 @@ module load samtools
 wd=/data3/scratch/bty565/bams/cage_2
 mkdir $wd/sams
 wds=$wd/sams
-for x in $wd/*.bam ; do samtools view "$x" > "$x".sam ; done
+for x in $wd/*.bam ; do samtools view "$x" > $wd.sam ; done
 
 # Extract chromosome 3R and output MAPQ and genomic position to new file
 for x in $wd/*.sam ; do awk '$3=="3R"' "$x" | awk ‘{print$4,$5}’ > "$x"_region.txt ; done
