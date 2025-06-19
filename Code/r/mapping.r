@@ -15,7 +15,7 @@ freq <- read_csv('/home/baron/Documents/PhD/Data/abi_raw_data/BAMs/cage_1/final.
 line_plot <- ggplot(freq, aes(x = pos, y = mapping_quality, color = Generation)) +
   geom_line(linewidth = 0.75) +
   theme_grey() +
-  labs(title = 'Mapping quality across focal region, gen2-56 (Cage 1)', y = 'Mapping_quality', x = 'Genomic_position_(Chr_3R)') + # Change cage number in title as required
+  labs(title = 'Mapping quality across focal region, gen2-56 (Cage 2)', y = 'Mapping_quality', x = 'Genomic_position_(Chr_3R)') + # Change cage number in title as required
   #scale_x_continuous(breaks = c(0,10,20,30,40,50,60,70,80,90,96)) + 
   #scale_y_continuous(breaks = c(0,10000,20000,3000,40000, 50000)) +
   #scale_fill_continuous(breaks = c(0,2,4,8,12,20,28,36,44,56)) +

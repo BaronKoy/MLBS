@@ -1,0 +1,56 @@
+// Simulation for Yao MSc project (EDIT THIS AS YOU LIKE =P)
+
+// -----INITIALISATION & PARAMETER SETUP-----
+
+initialize()
+{	
+	// Create a nucleotide based simulation model which allows the use of Bicyclus anynana genomes/nucleotides as input
+	initializeSLiMModelType('WF');
+	initializeSLiMOptions(nucleotideBased=T);
+	initializeAncestralNucleotides('/home/baron/Documents/PhD/Yao_data/fasta/GCF_947172395.1_ilBicAnyn1.1_genomic.fna'); // Genome assembly ilBicAnyn1.1
+	initializeTreeSeq();
+
+	// Assign mutation coefficient values - this will be used to simulate selection/neutrality within our selected regions of interest
+	defineConstant('Dco', runif(1, 1, 5)); // use Dco for variable value
+	defineConstant('Sco', runif(1, 0, 0.25)); // use Sco for variable value
+	initializeMutationTypeNuc("m1", 10.0, 'f', 0.1); // Balancing selection
+	initializeMutationTypeNuc("m2", 1.0, 'f', 0.25); // Positive selection
+	initializeMutationTypeNuc("m3", 0.5, 'f', 0); // Neutrality
+	
+	// Assign genomic element and weights of mutations
+	initializeGenomicElementType("g1", c(m1, m2 ,m3), c(0.0, 0.0, 1.0), mmJukesCantor(0.0)); // N
+	initializeGenomicElementType('g2', c(m1, m2, m3), c(1.0, 0.0), mmJukesCantor(0.0)); // P
+	initializeGenomicElementType("g3", c(m1, m2, m3), c(0.0, 1.0), mmJukesCantor(0.0)); // N
+	initializeGenomicElementType('g4', c(m1, m2, m3), c(1.0, 0.0), mmJukesCantor(0.0)); // BS region
+	initializeGenomicElementType('g5', c(m1, m2, m3), c(0.0, 1.0), mmJukesCantor(0.0)); // neutral region
+	initializeGenomicElementType('g6', c(m1, m2, m3), c(1.0, 0.0), mmJukesCantor(0.0)); // BS region
+	initializeGenomicElementType('g7', c(m1, m2, m3), c(0.0, 1.0), mmJukesCantor(0.0)); // neutral region
+	
+	// THE CODE BLOCK BELOW WILL HAVE TO BE CHANGED IF WORKING WITH CHROMOSOME Z - NOTE THAT 0 INDEXING IS USED - 
+	// Chromosome Z length 21,498,244
+	initializeGenomicElement(g1, 0, 18479919); // Adjust this value to align with the beginning of the focal region
+	initializeGenomicElement(g2, 18479920, 18479921); // Position 18479921 with 0 indexing
+	initializeGenomicElement(g3, 18479922, 32079330);
+	// 5949965-5977189 <- region of the Masc gene we wish to simulate BS
+	// Random variant within this region will be the selected variants of BS and we can observe the resulting selective sweep pattern
+	initializeRecombinationRate(1e-8);
+	
+	// Retain fixed alleles for output file
+	m1.convertToSubstitution = F;
+	m2.convertToSubstitution = F;
+}
+
+// -----SIMULATION RUN-----
+
+// Create population from VCF files
+1 early() 
+{
+	sim.addSubpop('p1', 5);
+	p1.genomes.readFromVCF(''); // CHANGE FOR VCF INPUT
+}
+
+// SIMULATE FOR 5 GENERATIONS AND OUTPUT RESULTS 
+5 late()
+{
+	sim.subpopulations[0].outputVCFSample(5, filePath = '/home/baron/Documents/PhD/Yao_data/output');
+}
