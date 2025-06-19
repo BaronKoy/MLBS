@@ -1,12 +1,15 @@
-# Code to cut original pileup files to only include focal region 3R:18520501 - 18521500
+# Code convert bams to pileup files & cut pileup files to only include focal region 3R:18520501 - 18521500
 # Retrives position, minor allele frequency, & adds generation to each file
 
 # TODO...finish final step that concatenates final output files together and adds column headers
 # TODO...currently the script needs to be run from the same working directory the pileup files reside in
 
+#Convert bam files to pileup
+for x in *.bam ; do samtools mpileup "$x" --max-depth 0 --min-BQ 0 --fasta-ref /data/home/bty565/empirical/inputs/GCA_000001215.4_full.fna -o "$x".pileup ; done # change FASTA depending on location
+
 # Extract lines for focal region and output to new file
 echo 'Cutting mpileup files for focal region 3R:28520501-18521500......'
-for x in *.gz ; do zcat "$x" | sed -rn '/^3R/p' | awk '/18520501/,/18521500/' > "$x".pileup ; done
+for x in *.gz ; do cat "$x" | sed -rn '/^3R/p' | awk '/18520501/,/18521500/' > "$x".pileup ; done
 echo Region cut complete!
 
 # Run ngsPool to calculate minor allele frequencies
