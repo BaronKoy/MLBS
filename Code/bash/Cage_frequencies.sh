@@ -14,12 +14,14 @@ echo Region cut complete!
 
 # Run ngsPool to calculate minor allele frequencies
 echo 'Running ngsPool......'
+mkdir ngs_output
 for x in *.pileup ; do julia ~/software/ngsJulia/ngsPool/ngsPool.jl --fin "$x" --fout ngs_output/"$x".out.gz --nChroms 96 ; done
 echo Allele frequencies calculated!
 
 # Extract colum 2 (Position) & column 11 (minor allele frequency) and output to new file
 echo 'Extracting columns 2 & 11 for position and minor allele frequency......'
 cd ngs_output/
+mkdir plot_data
 for x in *.out.gz ; do zcat "$x" | awk '{print$2,$11}' > plot_data/"$x" ; done
 echo 'Output file created!'
 
