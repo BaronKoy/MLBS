@@ -5,7 +5,7 @@
 # TODO...currently the script needs to be run from the same working directory the pileup files reside in
 
 #Convert bam files to pileup
-for x in *.bam ; do samtools mpileup "$x" --max-depth 0 --min-BQ 0 --fasta-ref /data/home/bty565/empirical/inputs/GCA_000001215.4_full.fna -o "$x".pileup ; done # change FASTA depending on location
+for x in *.bam ; do samtools mpileup "$x" --max-depth 0 --min-BQ 0 --fasta-ref /data/home/bty565/empirical/inputs/GCA_000001215.4_full.fna -o "$x".pileup.gz ; done # change FASTA depending on location
 
 # Extract lines for focal region and output to new file
 echo 'Cutting mpileup files for focal region 3R:28520501-18521500......'
