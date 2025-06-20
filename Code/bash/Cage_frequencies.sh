@@ -9,7 +9,7 @@ for x in *.bam ; do samtools mpileup "$x" --max-depth 0 --min-BQ 0 --fasta-ref /
 
 # Extract lines for focal region and output to new file
 echo 'Cutting mpileup files for focal region 3R:28520501-18521500......'
-for x in *.gz ; do cat "$x" | sed -rn '/^3R/p' | awk '/18520501/,/18521500/' > "$x".pileup ; done
+for x in *.gz ; do zcat "$x" | sed -rn '/^3R/p' | awk '/18520501/,/18521500/' > "$x".pileup ; done
 echo Region cut complete!
 
 # Run ngsPool to calculate minor allele frequencies
