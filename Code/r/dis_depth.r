@@ -4,7 +4,7 @@ library(ggplot2)
 library(reshape2)
 options(scipen = 999) # prevent scientific notation for genomic position on x axis
 
-freq <- read_csv('/home/baron/Documents/PhD/ML_balancingselection/reuter_data/pileup/depth/output/pop_10/final_pop10.pileup', #change for specific alignment file
+freq <- read_csv('/home/baron/Documents/PhD/Data/reuter_data/pileup/depth/output/pop_10/final_pop10.pileup', # change population for specific file
                  col_types = cols(pos = col_number(), depth = col_number(),
                                   Generation = col_character()))
 #assign column types
