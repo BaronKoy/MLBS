@@ -8,7 +8,7 @@ library(dplyr)
 
 options(scipen = 999) # prevent scientific notation for genomic position on x axis
 
-population <- read_csv('/home/baron/Documents/PhD/Data/plot_data/Cage_1.csv', # Change "Cage_1.csv" string as required
+population <- read_csv('/home/baron/Documents/PhD/Data/abi_raw_data/final_analysis/cage_1/pileup/ngs_output/plot_data/cage_1.csv', # Change "Cage_1.csv" string as required
                    col_types = cols(Position = col_character(), Allele_frequency = col_number(),
                                     Generation = col_number()))
 #population$Positioncolour <- rep('black', nrow(population)) # If filtering is required
@@ -20,14 +20,14 @@ population <- read_csv('/home/baron/Documents/PhD/Data/plot_data/Cage_1.csv', # 
 # General plot for all variants within focal region
 ggplot(population, aes(x = Generation, y = Allele_frequency, color = Position)) +
   # Colour data points that appear within the focal region. Note this will depend on what alleles pop up in what cage populations
-  scale_color_manual(values = c('black', 'black', 'black','black','black','black',
-                                'black','black','black','black','black','steelblue',
-                                'steelblue','steelblue','steelblue','steelblue','steelblue','steelblue',
-                                'steelblue','steelblue','steelblue','steelblue','steelblue','steelblue',
-                                'steelblue','steelblue','steelblue','steelblue','steelblue','black','black','black','black', 'black','black'),
-                     name = 'Genomic position (3R) 
-Focal allele range: 
-18521012 - 18521208') +
+  #scale_color_manual(values = c('black', 'black', 'black','black','black','black',
+   #                            'black','black','black','black','black','steelblue',
+    #                           'steelblue','steelblue','steelblue','steelblue','steelblue','steelblue',
+     #                          'steelblue','steelblue','steelblue','steelblue','steelblue','steelblue',
+      #                         'steelblue','steelblue','steelblue','steelblue','steelblue','black','black','black','black', 'black','black'),
+ #                    name = 'Genomic position (3R) 
+#Focal allele range: 
+#18521012 - 18521208') +
   #geom_count(size = 3) + #Add for points in graph figure if required
   geom_line(linewidth = 1) +
   # Line below can be used to highlight specific datapoint
