@@ -28,6 +28,7 @@ echo Allele frequencies calculated!
 
 #-----TODO-----
 #This is the step in which the filtering step should be coded in! Make sure that is done by the notes in the notes file and then you can continue with the next steps for the code
+#Check message related to file name length
 
 #Extract column 11 (minor allele frequency) and output to new file
 cd ngs_output/
