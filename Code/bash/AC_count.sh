@@ -20,8 +20,7 @@ for x in *.pileup ; do
         print
       }
     ' "$x"
-  done < intron_pos.txt ;
-done > allele_count/"$x"
+  done < /data/home/bty565/empirical/inputs/introns.txt > allele_count/"$x" ;
 echo 'intronic variants extracted!'
 
 #Run ngsPool to calculate minor allele frequencies
