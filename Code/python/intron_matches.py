@@ -46,7 +46,7 @@ def main():
         matched = match_positions(start_file, regions)
 
         if matched:
-            out_file = f"/data3/scratch/bty565/bams/test_cage/allele_count/{os.path.splitext(start_file)[0]}_matches.txt"
+            out_file = f"{os.path.splitext(start_file)[0]}_matches.txt"
             with open(out_file, 'w') as f:
                 f.write('\n'.join(matched) + '\n')
             print(f" → Matches written to {out_file}")
