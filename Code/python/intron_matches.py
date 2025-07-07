@@ -1,3 +1,4 @@
+#Module loads
 import os
 import glob
 
@@ -29,7 +30,7 @@ def match_positions(start_file, regions):
     return matches
 
 def main():
-    region_file = "/data/home/bty565/empirical/inputs/introns.txt"  # Change if needed
+    region_file = "/data/home/bty565/empirical/inputs/introns.txt"
     regions = load_regions(region_file)
 
     if not regions:
@@ -49,9 +50,9 @@ def main():
             out_file = f"{os.path.splitext(start_file)[0]}_matches.txt"
             with open(out_file, 'w') as f:
                 f.write('\n'.join(matched) + '\n')
-            print(f" → Matches written to {out_file}")
+            print(f"Matches written to {out_file}")
         else:
-            print(f" → No matches found in {start_file}")
+            print(f"No matches found in {start_file}")
 
 if __name__ == "__main__":
     main()
