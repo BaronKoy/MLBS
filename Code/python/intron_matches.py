@@ -39,7 +39,7 @@ def main():
 
     start_files = glob.glob("/data3/scratch/bty565/bams/test_cage/S0*.pileup")
     if not start_files:
-        print("No 'starts*.txt' files found.")
+        print("No start file(s) found.")
         return
 
     for start_file in start_files:
