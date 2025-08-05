@@ -51,6 +51,7 @@ def main():
             with open(out_file, 'w') as f:
                 f.write('\n'.join(matched) + '\n')
             print(f"Matches written to {out_file}")
+            print("Beginning processing next file...")
         else:
             print(f"No matches found in {start_file}")
 
