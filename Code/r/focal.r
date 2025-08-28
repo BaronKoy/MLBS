@@ -34,7 +34,7 @@ ggplot(population, aes(x = Generation, y = Allele_frequency, color = Position)) 
   #geom_line(data = population %>% filter(Position == '18521012'), color = 'firebrick1') +
   theme_grey() +
   #scale_color_gradient2(low = 'black', mid = 'yellow', high = 'blue') #TODO...gradient code check (relates to line regarding highlighting focal allele)
-  labs(title = 'Minor allele frequency within 1000bp region of interest (18520500-18521500) - Cage 1', y = 'Minor allele frequency', x = 'Generation') + # Change Cage number as required
+  labs(title = 'Minor allele frequency within focal region (18520500-18521500) - Cage 1', y = 'Minor allele frequency', x = 'Generation') + # Change Cage number as required
   scale_x_continuous(breaks = c(2,4,8,12,20,28,36,44,56)) +
   theme(axis.text = element_text(size = 20), axis.title = element_text(size = 20, face = 'bold'), 
         plot.title = element_text(size = 25, face = 'bold'), 
