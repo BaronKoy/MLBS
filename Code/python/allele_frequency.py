@@ -46,7 +46,7 @@ for gzfile in pileup_dir.glob("*.gz"):
     out_file = freq_dir / f"{gzfile.stem}.pileup"
     with open(out_file, "w") as fout:
         run(
-            ["zcat", str(gzfile)],
+            ["cat", str(gzfile)],
             stdout=subprocess.PIPE
         )
 
