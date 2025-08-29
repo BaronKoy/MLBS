@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import subprocess
 from pathlib import Path
-import pandas as pd
+import csv
 
 # -------------------------
 # PATHS
@@ -45,10 +45,7 @@ for bam in base_dir.glob("*.bam"):
 for gzfile in pileup_dir.glob("*.gz"):
     out_file = freq_dir / f"{gzfile.stem}.pileup"
     with open(out_file, "w") as fout:
-        run(
-            ["cat", str(gzfile)],
-            stdout=subprocess.PIPE
-        )
+        run(["cat", str(gzfile)], stdout=fout)
 
 # -------------------------
 # STEP 3: Run ngsPool (Julia)
@@ -66,15 +63,12 @@ for pileup in freq_dir.glob("*.pileup"):
 # STEP 4: Extract pos & MAF
 # -------------------------
 for gzfile in ngs_out_dir.glob("*.out.gz"):
-    out_file = plot_data_dir / gzfile.stem  # remove .gz in output filename
+    out_file = plot_data_dir / gzfile.stem
     with open(out_file, "w") as fout:
-        run(["zcat", str(gzfile)], stdout=subprocess.PIPE)
-        # awk-like filter: only position + minor allele freq
-        run(
-            ["awk", "{print $2\",\"$11}"],
-            stdin=gzfile.open("rb"),
-            stdout=fout
-        )
+        p1 = subprocess.Popen(["zcat", str(gzfile)], stdout=subprocess.PIPE)
+        p2 = subprocess.Popen(["awk", "{print $2\",\"$11}"], stdin=p1.stdout, stdout=fout)
+        p1.stdout.close()
+        p2.communicate()
 
 # -------------------------
 # STEP 5: Add generation numbers
@@ -116,27 +110,25 @@ for file in plot_data_dir.glob("*"):
         f.writelines(cleaned)
 
 # -------------------------
-# STEP 7: Concatenate all into one CSV
+# STEP 7 (no pandas version)
 # -------------------------
-all_data = []
-for file in plot_data_dir.glob("*"):
-    try:
-        df = pd.read_csv(
-            file,
-            header=None,
-            names=["position", "minor_allele_freq", "generation"]
-        )
-        # Drop any bad header lines that slipped through
-        df = df[pd.to_numeric(df["position"], errors="coerce").notnull()]
-        df["source_file"] = file.name
-        all_data.append(df)
-    except Exception as e:
-        print(f"[WARN] Skipping {file}, error: {e}")
+final_csv = base_dir / "final_plot_data.csv"
 
-if all_data:
-    combined = pd.concat(all_data, ignore_index=True)
-    final_csv = base_dir / "final_plot_data.csv"
-    combined.to_csv(final_csv, index=False)
-    print(f"[DONE] Final concatenated dataset saved as {final_csv}")
-else:
-    print("[WARN] No files found to concatenate.")
+with open(final_csv, "w", newline="") as fout:
+    writer = csv.writer(fout)
+    # write headers
+    writer.writerow(["position", "minor_allele_freq", "generation", "source_file"])
+
+    for file in plot_data_dir.glob("*"):
+        with open(file, "r") as fin:
+            for line in fin:
+                parts = line.strip().split(",")
+                if len(parts) != 3:  # skip malformed lines
+                    continue
+                pos, maf, gen = parts
+                # skip header-like rows
+                if pos.lower() == "position" or maf.lower() == "saf_mle":
+                    continue
+                writer.writerow([pos, maf, gen, file.name])
+
+print(f"[DONE] Final concatenated dataset saved as {final_csv}")
