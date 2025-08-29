@@ -6,7 +6,7 @@ import pandas as pd
 # -------------------------
 # PATHS
 # -------------------------
-base_dir = Path("/data3/scratch/bty565/bams/cage_2")
+base_dir = Path("/data3/scratch/bty565/cages/cage_2/bams")
 pileup_dir = base_dir / "pileup"
 freq_dir = pileup_dir / "frequency"
 ngs_out_dir = freq_dir / "ngs_output"
