@@ -1,8 +1,6 @@
-# Code to cut original pileup files to only include focal region 3R:18520501 - 18521500
+# Code to generate and cut pileup files to only include focal region 3R:18520501 - 18521500
 # Retrives position, minor allele frequency, & adds generation to each file
-
-# TODO...finish final step that concatenates final output files together and adds column headers
-# TODO...currently the script needs to be run from the same working directory the pileup files reside in
+# Produces final outfile file. Run Code/r/allele_frequency.r on final file to generate frequency plot
 
 # Modules for cluster run
 module load samtools
@@ -60,4 +58,17 @@ for x in *.out.gz ; do sed -i '/position,saf_MLE/d' "$x" ; done
 echo 'Non-variant lines removed!'
 
 # Combine into a single plot file
-#TODO...concatenates final files into plot data file and add column headers for plot script...
+echo 'Combining files into final dataset......'
+
+# Define output filename
+output_file="final_plot_data.csv"
+
+# Add header row
+echo "Position,Allele_frequency,Generation" > "$output_file"
+
+# Concatenate files in correct generation order, sorting by position
+for gen in 2 4 8 12 20 28 36 44 56 ; do
+    grep -h ",$gen$" *.out.gz | sort -t',' -k1,1n >> "$output_file"
+done
+
+echo "Final dataset created: $output_file"
