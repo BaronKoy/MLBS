@@ -7,7 +7,7 @@ module load samtools
 module load julia
 
 # BAM to pileup
-cd /data3/scratch/bty565/bams/cage_1
+cd /data3/scratch/bty565/cages/cage_1/bams
 mkdir pileup
 for x in *.bam ; do samtools mpileup "$x" --max-depth 0 --min-BQ 0 --fasta-ref /data/home/bty565/empirical/inputs/GCA_000001215.4_full.fna -o pileup/"$x".pileup.gz ; done # change FASTA depending on location
 
