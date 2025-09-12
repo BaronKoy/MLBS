@@ -1,3 +1,4 @@
+# matches introns against entries in temporal pileups
 import sys
 import os
 from collections import defaultdict
