@@ -5,7 +5,7 @@ library(dplyr)
 
 options(scipen = 999) # prevent scientific notation for genomic position on x axis
 
-population <- read_csv('/home/baron/Documents/PhD/Data/plot_data/cage_2/final_plot_data.csv', # Change cage directory as required
+population <- read_csv('/home/baron/Documents/final_plot_data.csv', # Change cage directory as required
                    col_types = cols(Position = col_character(),
                                     Allele_frequency = col_number(),
                                     Generation = col_number()))
@@ -23,7 +23,7 @@ ggplot(population, aes(x = Generation, y = Allele_frequency,
   scale_color_manual(values = c("outside" = "black", "focal" = "steelblue"),
                      name = "Genomic range",
                      labels = c("Sites within genomic range 3R:18521012–18521208", "Sites outside of range")) +
-  labs(title = 'Per site minor allele frequency tracjectory across generation 2-56 --- Cage 2',
+  labs(title = 'Per site minor allele frequency tracjectory across generation 2-56 --- Cage 1',
        y = 'Minor allele frequency', x = 'Generation') +
   scale_x_continuous(breaks = c(2,4,8,12,20,28,36,44,56)) +
   scale_y_continuous(limits = c(0, 0.5)) +
