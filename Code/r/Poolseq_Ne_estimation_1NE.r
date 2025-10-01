@@ -1,5 +1,5 @@
 # Calculates the effective population size (Ne) from allele frequency trajectories
-# v.1.00
+# v.1.01 - Oct 2025
 
 # ----LOAD LIBRARIES----
 # Load library
@@ -19,7 +19,7 @@ estimateNe_from_trajectories_A <- function(sync,
                                            gens = c(2,4,8,12,20,28,36,44,56),
                                            repl = 1,
                                            gen0 = gens[1],          # baseline generation (2)
-                                           minCov = 10,             # Coverage threshold 10
+                                           minCov = 20,             # Coverage threshold, change when required
                                            minSites = 1000,
                                            nboot = 200,             # bootstrap replicates for CI
                                            bootSampleSize = 20000,  # sample size per bootstrap (<= nSites)
@@ -74,7 +74,7 @@ estimateNe_from_trajectories_A <- function(sync,
     keys_kept <- common[keep]
     kept_keys_list[[as.character(g)]] <- keys_kept
     
-    # Account for sampling variance!!! - check with Max
+    # Account for sampling variance
     # sampling variance per locus: approx p0(1-p0)/cov0 + p_g(1-p_g)/covg
     sampVar <- p0k*(1-p0k)/cov0k + pgk*(1-pgk)/covgk
     
