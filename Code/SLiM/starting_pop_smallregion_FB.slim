@@ -7,7 +7,7 @@ initialize()
 {	// Nucleotide based WF model
 	initializeSLiMModelType('WF');
 	initializeSLiMOptions(nucleotideBased=T);
-	initializeAncestralNucleotides('/data/home/bty565/simulations/inputs/fasta/GCA_000001215.4_3R_cutregion.fna'); // 3R: 18520500 - 18521500
+	initializeAncestralNucleotides('/data/home/bty565/simulations/inputs/fasta/GCA_000001215.4_3R.fna'); // Chromosome 3R
 	initializeTreeSeq();
 
 	// Assign mutation coefficient values
@@ -20,10 +20,10 @@ initialize()
 	initializeGenomicElementType('g3', c(m1, m2), c(1.0, 0.0), mmJukesCantor(0.0)); // neutral
 	
 	// Define chromosome structure
-	// Positions based on Release 6 plus ISO1 MT assembly - chromosome 3R: 18520500 - 18521500 only
+	// Positions based on Release 6 plus ISO1 MT assembly - chromosome 3R only
 	// Recombination rate 1.71642e-08 from Comeron et al. 2012 PLoS Genetics - uniform rate
-    // 3R: 18520500 - 18521012
-    initializeGenomicElement(g1, 0, 511);
+    // 3R: 1 - 18520499
+    initializeGenomicElement(g1, 0, 18520500);
     // 3R: 18521013 - 18521500
     initializeGenomicElement(g1, 512, 999);
 	initializeRecombinationRate(1.71642e-08);
