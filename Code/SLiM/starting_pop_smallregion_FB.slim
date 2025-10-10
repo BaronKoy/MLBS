@@ -40,18 +40,12 @@ initialize()
 1 early() 
 {
 	sim.addSubpop('p1', 14);
-<<<<<<< HEAD
 	p1.genomes.readFromVCF('/data/home/bty565/simulations/inputs/vcfs/dgrp2_FB.vcf');
 	sim.addSubpop('p2', 14);
 	p2.genomes.readFromVCF('/data/home/bty565/simulations/inputs/vcfs/dgrp2_MB.vcf');
-=======
-	p1.genomes.readFromVCF('/data/home/bty565/simulations/inputs/vcfs/starting_populations/FB.vcf');
-	sim.addSubpop('p2', 14);
-	p2.genomes.readFromVCF('/data/home/bty565/simulations/inputs/vcfs/starting_populations/MB.vcf');
->>>>>>> b9eb6456059d76f6f3eb8d8928a8c30f6bb045d3
 }
 
-// Population growth from 14 to 185 over 3 generations. Move flies into cage 1 with 9:1 (L:S) ratio
+// Population growth from 14 to 190 over 3 generations. Move flies into cage 1 with 9:1 (L:S) ratio
 4 early()
 {
 	p1.setSubpopulationSize(190);
@@ -70,19 +64,10 @@ initialize()
     p3.takeMigrants(c(inds_from_p1, inds_from_p2));
 }
 
-<<<<<<< HEAD
-// Set back default migration rates. Output vcf for cage 1 population - 185 samples
+// Set back default migration rates. Output vcf for cage 1 population - 190 samples
 4 late()
 {
 	p3.setMigrationRates(c(p1, p2), c(0.0, 0.0));
-	sim.subpopulations[2].outputVCFSample(185, filePath = '/data/home/bty565/simulations/outputs/L_pop/cage_1/vcfs/starting_pop.vcf');
+	sim.subpopulations[2].outputVCFSample(190, filePath = '/data/home/bty565/simulations/outputs/L_pop/cage_1/vcfs/starting_pop.vcf');
 	sim.simulationFinished(); // complete simulation run
-=======
-// Output VCF for cage 1 population - 50 samples
-4 late() {
-    sim.subpopulations["p3"].outputVCFSample(
-        190, // number of samples in starting population
-        filePath = '/data/home/bty565/simulations/inputs/vcfs/FB/startingFB.vcf');
-    sim.simulationFinished(); // complete simulation run
->>>>>>> b9eb6456059d76f6f3eb8d8928a8c30f6bb045d3
 }
