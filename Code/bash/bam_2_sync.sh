@@ -37,5 +37,5 @@ done | sort -k1,1 | while read -r date file; do
   ((count++))
   
   echo "$month $year > ${count}.txt"
-  mv "$file" "${count}.txt"
+  mv "$file" "${count}.bam"
 done
