@@ -1,0 +1,114 @@
+// -----------------------------------------------------------------------------
+// Simulation of Cage Experiment (Reuter Lab, 2021) — Part 2
+// Region: 3R:18,515,500-18,526,500 (~11 kb)
+// Using fixed DGRP2 lines: 14 FB + 14 MB
+// Growth from 14->190 over 3 gens, move into cage 1 (9:1 FB:MB ratio)
+// Neutral model with uniform recombination and mutation rates
+// Author: Baron Koylass | Date: 2025-10-16 | Version 1.00
+// Requires: SLiM 5.0 or later
+// -----------------------------------------------------------------------------
+
+// ------------------------------ INITIALIZATION -------------------------------
+initialize() {
+    // Ensure version compatibility
+    requireVersion("5.0");
+
+    // Wright–Fisher model, nucleotide-based
+    initializeSLiMModelType("WF");
+    initializeSLiMOptions(nucleotideBased = T);
+    initializeTreeSeq();
+
+    // Set ancestral reference
+    initializeAncestralNucleotides(
+        "/data/home/bty565/simulations/inputs/fasta/GCA_000001215.4_focal11kb.fa"
+    );
+
+    // ----------------- Mutation model -----------------
+    // Mutation rate and recombination from literature
+    defineConstant("MU", 5.21e-9);          // Keightley et al. 2014 PLoS Biol
+    defineConstant("RHO", 1.71642e-8);      // Comeron et al. 2012 PLoS Genet
+    initializeMutationRate(MU);
+
+    initializeMutationTypeNuc("m1", 0.5, "f", 0.0); // neutral
+    initializeMutationTypeNuc("m2", 0.5, "f", 0.0); // neutral (placeholder)
+    m1.convertToSubstitution = F;
+    m2.convertToSubstitution = F;
+
+    // ----------------- Genomic elements -----------------
+    // Region layout (positions relative to 3R:18,515,500–18,526,500)
+    initializeGenomicElementType("g1", c(m1, m2), c(1.0, 0.0), mmJukesCantor(0.0));
+    initializeGenomicElementType("g2", c(m1, m2), c(0.0, 1.0), mmJukesCantor(0.0));
+    initializeGenomicElementType("g3", c(m1, m2), c(1.0, 0.0), mmJukesCantor(0.0));
+
+    initializeGenomicElement(g1, 0, 4998);
+    initializeGenomicElement(g2, 4999, 5999);
+    initializeGenomicElement(g3, 6000, 10999);
+    initializeRecombinationRate(RHO);
+}
+
+// -----Cage simulation run-----
+
+// Output VCF and MS file for each generation (and tree sequence file)
+
+// Load starting population from starting_pop_smallregion_FB.slim output vcf file
+1 early() 
+{
+	sim.addSubpop('p1', 48);
+	p1.genomes.readFromVCF('/data/home/bty565/simulations/outputs/L_pop/cage_1/vcfs/L_start.vcf');
+}
+
+// Output 48 samples at 2,4,8,12,20,28,36,44,56 generations
+2 late()
+{
+	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/FB/cage_1/vcf/gen2.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/FB/cage_1/tree/L_gen2.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/FB/cage_1/ms/CEU_neu_gen2.ms");
+}
+
+4 late()
+{	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/FB/cage_1/vcf/gen4.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/FB/cage_1/tree/L_gen4.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/FB/cage_1/ms/CEU_neu_gen4.ms");
+}
+
+8 late()
+{	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/FB/cage_1/vcf/gen8.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/FB/cage_1/tree/L_gen8.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/FB/cage_1/ms/CEU_neu_gen8.ms");
+}
+
+12 late()
+{	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/FB/cage_1/vcf/gen12.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/FB/cage_1/tree/L_gen12.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/FB/cage_1/ms/CEU_neu_gen12.ms");
+}
+
+20 late()
+{	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/FB/cage_1/vcf/gen20.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/FB/cage_1/tree/L_gen20.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/FB/cage_1/ms/CEU_neu_gen20.ms");
+}
+
+28 late()
+{	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/FB/cage_1/vcf/gen28.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/FB/cage_1/tree/L_gen28.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/FB/cage_1/ms/CEU_neu_gen28.ms");
+}
+
+36 late()
+{	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/FB/cage_1/vcf/gen36.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/FB/cage_1/tree/L_gen36.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/FB/cage_1/ms/CEU_neu_gen36.ms");
+}
+
+44 late()
+{	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/FB/cage_1/vcf/gen44.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/FB/cage_1/tree/L_gen44.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/FB/cage_1/ms/CEU_neu_gen44.ms");
+}
+56 late()
+{	sim.subpopulations[0].outputVCFSample(48, filePath = '/data/home/bty565/simulations/outputs/FB/cage_1/vcf/gen56.vcf');
+	sim.treeSeqOutput('/data/home/bty565/simulations/outputs/FB/cage_1/tree/L_gen56.trees');
+	p1.outputMSSample(96, replace=F, filePath="/data/home/bty565/simulations/outputs/FB/cage_1/ms/CEU_neu_gen56.ms");
+	sim.simulationFinished();
+}

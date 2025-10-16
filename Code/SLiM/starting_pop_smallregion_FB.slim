@@ -1,82 +1,101 @@
-// Simulation of Cage experiment Reuter lab 2021 - Part 1 (create starting population)
-// Simulates smaller region (3R: 18515500 - 18526500) 11kb region
-// Using fixed lines from DGRP2 - 14 FB and 14 MB lines
-// Population growth from 14 to 190 over 3 generations. Move flies into cage 1 with 9:1 (L:S) ratio
-// Output vcf for cage 1 population - 190 samples
-// Neutral model
-// Recombination rate 1.71642e-08 from Comeron et al. 2012 PLoS Genetics - uniform rate
-// Mutation rate 5.21e-09 from Keightley et al. 2014 PLoS Biology
-// SLiM version 3.7.1
-// Baron Koylass 2025
+// -----------------------------------------------------------------------------
+// Simulation of Cage Experiment (Reuter Lab, 2021) — Part 1
+// Region: 3R:18,515,500-18,526,500 (~11 kb)
+// Using fixed DGRP2 lines: 14 FB + 14 MB
+// Growth from 14->190 over 3 gens, move into cage 1 (9:1 FB:MB ratio)
+// Neutral model with uniform recombination and mutation rates
+// Author: Baron Koylass | Date: 2025-10-16 | Version 1.02
+// Requires: SLiM 5.0 or later
+// -----------------------------------------------------------------------------
 
-// ---- Intialisation & parameter setup ----
-initialize()
-{	// Nucleotide based WF model
-	initializeSLiMModelType('WF');
-	initializeSLiMOptions(nucleotideBased=T);
-	initializeAncestralNucleotides('/data/home/bty565/simulations/inputs/fasta/GCA_000001215.4_focal11kb.fa'); // Chromosome 3R
-	initializeTreeSeq();
+// ------------------------------ INITIALIZATION -------------------------------
+initialize() {
+    // Ensure version compatibility
+    requireVersion("5.0");
 
-	// Assign mutation coefficient values
-	initializeMutationTypeNuc('m1', 0.5, 'f', 0); // neutral hs
-	initializeMutationTypeNuc('m2', 0.5, 'f', 0); // neutral hs
-	
-	// Assign genomic element and weights of mutations
-	initializeGenomicElementType("g1", c(m1, m2), c(1.0, 0.0), mmJukesCantor(0.0)); // neutral
-	initializeGenomicElementType('g2', c(m1, m2), c(0.0, 1.0), mmJukesCantor(0.0)); // overdominance
-	initializeGenomicElementType('g3', c(m1, m2), c(1.0, 0.0), mmJukesCantor(0.0)); // neutral
-	
-	// Define chromosome structure
-	// Positions based on Release 6 plus ISO1 MT assembly - chromosome 3R only
-	// Recombination rate 1.71642e-08 from Comeron et al. 2012 PLoS Genetics - uniform rate
-    // 3R: 18515500 - 18526500 (1 - 4999) - STARTING REGION
+    // Wright–Fisher model, nucleotide-based
+    initializeSLiMModelType("WF");
+    initializeSLiMOptions(nucleotideBased = T);
+    initializeTreeSeq();
+
+    // Set ancestral reference
+    initializeAncestralNucleotides(
+        "/data/home/bty565/simulations/inputs/fasta/GCA_000001215.4_focal11kb.fa"
+    );
+
+    // ----------------- Mutation model -----------------
+    // Mutation rate and recombination from literature
+    // defineConstant("MU", 5.21e-9);          // Keightley et al. 2014 PLoS Biol
+    defineConstant("RHO", 1.71642e-8);      // Comeron et al. 2012 PLoS Genet
+    // initializeMutationRate(MU);
+
+    initializeMutationTypeNuc("m1", 0.5, "f", 0.0); // neutral
+    initializeMutationTypeNuc("m2", 0.5, "f", 0.0); // neutral (placeholder)
+    m1.convertToSubstitution = F;
+    m2.convertToSubstitution = F;
+
+    // ----------------- Genomic elements -----------------
+    // Region layout (positions relative to 3R:18,515,500–18,526,500)
+    initializeGenomicElementType("g1", c(m1, m2), c(1.0, 0.0), mmJukesCantor(0.0));
+    initializeGenomicElementType("g2", c(m1, m2), c(0.0, 1.0), mmJukesCantor(0.0));
+    initializeGenomicElementType("g3", c(m1, m2), c(1.0, 0.0), mmJukesCantor(0.0));
+
     initializeGenomicElement(g1, 0, 4998);
-    // 3R: 18515500 - 18526500 (5000 6000) - FOCAL REGION
     initializeGenomicElement(g2, 4999, 5999);
-	// 3R: 18515500 - 18526500 (6001 - 11000) - ENDING REGION
-	initializeGenomicElement(g3, 6000, 10999);
-	initializeRecombinationRate(1.71642e-08);
-}
-{
-	// Retain fixed alleles for output file
-	m1.convertToSubstitution = F;
-	m2.convertToSubstitution = F;
+    initializeGenomicElement(g3, 6000, 10999);
+    initializeRecombinationRate(RHO);
 }
 
-// -----Fixed lines population setup-----
+// --------------------------- POPULATION SETUP -------------------------------
+1 early() {
+    // Create subpopulations (empty shells)
+    sim.addSubpop("p1", 14);
+    sim.addSubpop("p2", 14);
 
-// Create two populations from DGRP fixed lines
-1 early() 
-{
-	sim.addSubpop('p1', 14);
-	p1.genomes.readFromVCF('/data/home/bty565/simulations/inputs/vcfs/FB/dgrp2_FB.vcf');
-	sim.addSubpop('p2', 14);
-	p2.genomes.readFromVCF('/data/home/bty565/simulations/inputs/vcfs/MB/dgrp2_MB.vcf');
+    // Load genotypes from DGRP2 VCFs into each subpop
+    sim.readFromVCF(
+        "/data/home/bty565/simulations/inputs/vcfs/FB/dgrp2_FB.vcf",
+        subpop = p1
+    );
+    sim.readFromVCF(
+        "/data/home/bty565/simulations/inputs/vcfs/MB/dgrp2_MB.vcf",
+        subpop = p2
+    );
+
+    cat("DGRP2 VCFs loaded successfully for p1 and p2.\n");
 }
 
-// Population growth from 14 to 190 over 3 generations. Move flies into cage 1 with 9:1 (L:S) ratio
-4 early()
-{
-	p1.setSubpopulationSize(190);
-	p2.setSubpopulationSize(190);
-	// Create p3 empty
+// ----------------------- GROWTH AND CAGE TRANSFER ----------------------------
+4 early() {
+    // Grow both lines to 190 individuals each (neutral expansion)
+    p1.setSubpopulationSize(190);
+    p2.setSubpopulationSize(190);
+
+    // Create empty cage population
     sim.addSubpop("p3", 0);
-// Define ratio
-    n1 = asInteger(0.9 * 190);
-    n2 = 190 - n1;
 
-    // Sample individuals in correct proportion
+    // Mixing ratio: 9 : 1 (L:S)
+    defineConstant("CAGE_SIZE", 190);
+    defineConstant("PROP_FB", 0.9);
+    n1 = asInteger(PROP_FB * CAGE_SIZE);
+    n2 = CAGE_SIZE - n1;
+
+    // Sample from each parental pop and move into p3
     inds_from_p1 = sample(p1.individuals, n1);
     inds_from_p2 = sample(p2.individuals, n2);
-
-    // Move them into p3
     p3.takeMigrants(c(inds_from_p1, inds_from_p2));
+
+    cat("Formed cage population p3 with ", n1, " FB and ", n2, " MB flies.\n");
 }
 
-// Set back default migration rates. Output vcf for cage 1 population - 190 samples
-4 late()
-{
-	p3.setMigrationRates(c(p1, p2), c(0.0, 0.0));
-	sim.subpopulations[2].outputVCFSample(190, filePath = '/data/home/bty565/simulations/outputs/FB/starting_pop_FB.vcf');
-	sim.simulationFinished(); // complete simulation run
+// ------------------------------- OUTPUT -------------------------------------
+4 late() {
+    // Stop migration, output VCF sample of 190 from p3
+    p3.setMigrationRates(c(p1, p2), c(0.0, 0.0));
+
+    outPath = "/data/home/bty565/simulations/outputs/FB/starting_pop_FB.vcf";
+    sim.subpopulations["p3"].outputVCFSample(190, filePath = outPath);
+
+    cat("✅ Output VCF written to: ", outPath, "\n");
+    sim.simulationFinished();
 }
