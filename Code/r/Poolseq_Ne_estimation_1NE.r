@@ -12,7 +12,7 @@ library(Rcpp)
 
 # ----FUNCTIONS & DATASET----
 # Load in sync file into variable 'Sync'
-Sync <- read.sync(file = '/home/baron/Documents/PhD/Data/pop_size_analysis/PoolSeq/cage_1.sync', gen = c(2,4,8,12,20,28,36,44,56), repl = 1)
+Sync <- read.sync(file = '/home/baron/Documents/PhD/Data/pop_size_analysis/PoolSeq/cages/cage_10.sync', gen = c(2,4,8,12,20,28,36,44,56), repl = 1)
 
 # Load parameters from Sync into function
 estimateNe_from_trajectories_A <- function(sync,
