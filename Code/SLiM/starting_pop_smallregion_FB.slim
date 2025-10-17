@@ -4,7 +4,7 @@
 // Using fixed DGRP2 lines: 14 FB + 14 MB
 // Growth from 14->190 over 3 gens, move into cage 1 (9:1 FB:MB ratio)
 // Neutral model with uniform recombination and mutation rates
-// Author: Baron Koylass | Date: 2025-10-16 | Version 1.02
+// Author: Baron Koylass | Date: 2025-10-17 | Version 1.03
 // Requires: SLiM 5.0
 // -----------------------------------------------------------------------------
 
@@ -65,40 +65,36 @@ initialize() {
         // Grow both lines to 250 individuals each (neutral expansion)
         p1.setSubpopulationSize(250);
         p2.setSubpopulationSize(250);
-
-        // Create p3 with 1 dummy individual (required by SLiM)
-        sim.addSubpop("p3", 1);
-
-        // Define cage composition
-        defineConstant("CAGE_SIZE", 250);
-        defineConstant("PROP_FB", 0.9);
-        n1 = asInteger(PROP_FB * CAGE_SIZE);
-        n2 = CAGE_SIZE - n1;
-
-        // Sample individuals from p1 and p2
-        inds_from_p1 = sample(p1.individuals, n1);
-        inds_from_p2 = sample(p2.individuals, n2);
-
-        // Remove the dummy individual
-        p3.individuals[0].kill();
-
-        // Add sampled individuals from p1 and p2 to p3
-        p3.takeMigrants(c(inds_from_p1, inds_from_p2));
-
-        cat("Formed cage population p3 with ", n1, " FB and ", n2, " MB flies.\n");
     }
 
 // Late() block for generation-specific output
 4 late() {
 
-        // Stop migration (set all rates to 0)
-        p3.setMigrationRates(c(p1, p2), c(0.0, 0.0));
+        // Define cage composition
+        defineConstant("CAGE_SIZE", 250);
+        defineConstant("PROP_FB", 0.9);
+        n1 = asInteger(PROP_FB * CAGE_SIZE); // 225
+        n2 = asInteger(CAGE_SIZE - n1); // 25
 
-        // Output a VCF sample of 190 individuals from p3
+        // Create p3 by sampling n1 individuals FROM p1
+        sim.addSubpopSplit("p3", n1, p1);
+
+        // Set temporary migration from p2 into p3
+        p3.setMigrationRates(p2, n2 / CAGE_SIZE); // 0.1
+    }
+
+// Freeze populations and output starting vcf file
+5 early() {
+   
+        // Stop migration
+        p3.setMigrationRates(p2, 0.0);
+    }
+
+5 late() {
+
+        // Output a VCF sample of 250 individuals from p3
         outPath = "/data/home/bty565/simulations/outputs/FB/starting_pop_FB.vcf";
         p3.outputVCFSample(250, filePath = outPath);
-
-        cat("Output VCF written to: ", outPath, "\n");
 
         // End simulation
         sim.simulationFinished();
