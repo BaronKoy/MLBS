@@ -1,7 +1,7 @@
-# Calculates the effective population size (Ne) from allele frequency trajectories
-# v.1.01 - Oct 2025
+# Calculates the effective population size (Ne) from allele frequency trajectories - single Ne for 1 population
+# v.1.02 - Oct 2025
 
-# ----LOAD LIBRARIES----
+# ---- LOAD LIBRARIES ----
 # Load library
 library(poolSeq)
 library(data.table)
@@ -10,198 +10,159 @@ library(stringi)
 library(matrixStats)
 library(Rcpp)
 
-# ----FUNCTIONS & DATASET----
+# ---- FUNCTIONS & DATASET ----
 # Load in sync file into variable 'Sync'
-Sync <- read.sync(file = '/home/baron/Documents/PhD/Data/pop_size_analysis/PoolSeq/cages/cage_10.sync', gen = c(2,4,8,12,20,28,36,44,56), repl = 1)
+Sync <- read.sync(file = '/home/baron/Documents/PhD/Data/pop_size_analysis/PoolSeq/cages/cage_2.sync', gen = c(2,4,8,12,20,28,36,44,56), repl = 1)
 
 # Load parameters from Sync into function
-estimateNe_from_trajectories_A <- function(sync,
-                                           gens = c(2,4,8,12,20,28,36,44,56),
-                                           repl = 1,
-                                           gen0 = gens[1],          # baseline generation (2)
-                                           minCov = 20,             # Coverage threshold, change when required
-                                           minSites = 1000,
-                                           nboot = 200,             # bootstrap replicates for CI
-                                           bootSampleSize = 20000,  # sample size per bootstrap (<= nSites)
-                                           seed = 1,
-                                           verbose = TRUE) {
+# ---- FUNCTION TO ESTIMATE Ne PER INTERVAL ----
+# ---- FUNCTION TO ESTIMATE Ne PER INTERVAL WITH BOOTSTRAP ----
+# ----COMBINED FUNCTION: PER-INTERVAL + OVERALL Ne----
+estimateNe_combined <- function(sync,
+                                gens = c(2,4,8,12,20,28,36,44,56),
+                                repl = 1,
+                                minCov = 20,
+                                minSites = 1000,
+                                nboot = 200,
+                                bootSampleSize = 20000,
+                                seed = 1,
+                                verbose = TRUE) {
   set.seed(seed)
-  stopifnot(gen0 %in% gens)
-  other_gens <- gens[gens != gen0]
+  n_intervals <- length(gens) - 1
   
-  # pull p0 and cov0
-  p0_all   <- af(sync, gen = gen0, repl = repl)
-  cov0_all <- coverage(sync, gen = gen0, repl = repl)
+  # Store per-interval results
+  res_list <- vector("list", n_intervals)
   
-  # for each later generation compute corrected F
+  # For regression (overall Ne)
   t_vals <- numeric(0)
   F_vals <- numeric(0)
-  nSites_vec <- integer(0)
+  nSites_vec <- numeric(0)
   
-  # Store per-locus data keyed by names for bootstrap convenience
-  # Vectors per later gen of the locus keys kept
-  kept_keys_list <- list()
-  
-  for (g in other_gens) {
-    p_g_all   <- af(sync, gen = g, repl = repl)
-    cov_g_all <- coverage(sync, gen = g, repl = repl)
+  for (i in 1:n_intervals) {
+    gen0 <- gens[i]
+    gen1 <- gens[i+1]
     
-    # align keys present in both
-    common <- intersect(names(p0_all), names(p_g_all))
-    if (length(common) == 0) {
-      if (verbose) message("No common loci for gen ", gen0, " and gen ", g)
-      next
-    }
+    p0_all   <- af(sync, gen = gen0, repl = repl)
+    cov0_all <- coverage(sync, gen = gen0, repl = repl)
+    p1_all   <- af(sync, gen = gen1, repl = repl)
+    cov1_all <- coverage(sync, gen = gen1, repl = repl)
+    
+    common <- intersect(names(p0_all), names(p1_all))
+    if (length(common) == 0) next
     
     p0 <- as.numeric(p0_all[common])
-    pg <- as.numeric(p_g_all[common])
+    p1 <- as.numeric(p1_all[common])
     cov0 <- as.numeric(cov0_all[common])
-    covg <- as.numeric(cov_g_all[common])
+    cov1 <- as.numeric(cov1_all[common])
     
-    # filters: no NA, cov >= minCov at both times, remove fixed in both!!!
-    keep <- !is.na(p0) & !is.na(pg) & !is.na(cov0) & !is.na(covg) &
-      cov0 >= minCov & covg >= minCov &
-      !((p0 == 0 & pg == 0) | (p0 == 1 & pg == 1))
+    keep <- !is.na(p0) & !is.na(p1) & !is.na(cov0) & !is.na(cov1) &
+      cov0 >= minCov & cov1 >= minCov &
+      !((p0 == 0 & p1 == 0) | (p0 == 1 & p1 == 1))
     
     n_sites <- sum(keep)
-    if (verbose) message(sprintf("Interval %d->%d: %d loci kept", gen0, g, n_sites))
     if (n_sites < minSites) {
-      if (verbose) message("Too few sites; skipping interval ", gen0, "->", g)
+      if (verbose) message("Too few sites for interval ", gen0, "->", gen1)
       next
     }
     
-    p0k <- p0[keep]; pgk <- pg[keep]; cov0k <- cov0[keep]; covgk <- covg[keep]
-    keys_kept <- common[keep]
-    kept_keys_list[[as.character(g)]] <- keys_kept
+    p0k <- p0[keep]; p1k <- p1[keep]; cov0k <- cov0[keep]; cov1k <- cov1[keep]
     
-    # Account for sampling variance
-    # sampling variance per locus: approx p0(1-p0)/cov0 + p_g(1-p_g)/covg
-    sampVar <- p0k*(1-p0k)/cov0k + pgk*(1-pgk)/covgk
-    
-    # corrected squared change
-    sqchg_corr <- (pgk - p0k)^2 - sampVar
-    
-    # replace small negative corrected values by 0
+    # Corrected F
+    sampVar <- p0k*(1-p0k)/cov0k + p1k*(1-p1k)/cov1k
+    sqchg_corr <- (p1k - p0k)^2 - sampVar
     sqchg_corr[sqchg_corr < 0] <- 0
-    
-    # standardized F per locus: (corrected sq change) / [p0(1-p0)]
     denom <- p0k*(1-p0k)
-    # avoid dividing by extremely small denom: drop loci with p0*(1-p0) < tiny
     tiny <- 1e-8
     good <- denom > tiny
-    if (sum(good) < minSites) {
-      if (verbose) message("After removing tiny-p loci, too few sites for interval ", gen0, "->", g)
-      next
-    }
+    if (sum(good) < minSites) next
     
     F_hat <- mean(sqchg_corr[good] / denom[good], na.rm = TRUE)
+    Ne_hat <- ifelse(F_hat > 0, 1/(2*F_hat), NA)
     
-    t_vals <- c(t_vals, g - gen0)
+    # Bootstrap for CI per interval
+    boot_ne <- numeric(nboot)
+    keys <- which(good)
+    n_keys <- length(keys)
+    for (b in 1:nboot) {
+      idx <- sample(keys, size = min(bootSampleSize, n_keys), replace = TRUE)
+      p0b <- p0k[idx]; p1b <- p1k[idx]; cov0b <- cov0k[idx]; cov1b <- cov1k[idx]
+      sampVar_b <- p0b*(1-p0b)/cov0b + p1b*(1-p1b)/cov1b
+      sqb <- (p1b - p0b)^2 - sampVar_b
+      sqb[sqb < 0] <- 0
+      denom_b <- p0b*(1-p0b)
+      good_b <- denom_b > tiny
+      if (sum(good_b) < 10) {
+        boot_ne[b] <- NA
+      } else {
+        F_b <- mean(sqb[good_b] / denom_b[good_b], na.rm = TRUE)
+        boot_ne[b] <- ifelse(F_b > 0, 1/(2*F_b), NA)
+      }
+    }
+    
+    boot_ne <- boot_ne[!is.na(boot_ne)]
+    Ne_CI <- if(length(boot_ne) > 0) quantile(boot_ne, probs = c(0.025, 0.5, 0.975)) else c(NA, NA, NA)
+    
+    res_list[[i]] <- data.frame(
+      gen0 = gen0,
+      gen1 = gen1,
+      Ne = Ne_hat,
+      Ne_lower = Ne_CI[1],
+      Ne_median = Ne_CI[2],
+      Ne_upper = Ne_CI[3],
+      nSites = sum(good)
+    )
+    
+    # Add to regression vectors
+    t_vals <- c(t_vals, gen1 - gen0)
     F_vals <- c(F_vals, F_hat)
     nSites_vec <- c(nSites_vec, sum(good))
   }
   
-  if (length(t_vals) < 2) stop("Not enough intervals with data to fit regression.")
-  
-  # Fit linear regression through origin: F = s * t  => s = coef(lm(F ~ 0 + t))
-  lm_fit <- lm(F_vals ~ 0 + t_vals, weights = nSites_vec)  # weight by number of loci per t
+  # Overall Ne by regression
+  lm_fit <- lm(F_vals ~ 0 + t_vals, weights = nSites_vec)
   s_hat <- as.numeric(coef(lm_fit))
-  Ne_hat <- 1 / (2 * s_hat)
+  Ne_overall <- 1 / (2 * s_hat)
   
-  # bootstrap to get CIs: resample loci (by index) per interval and refit regression
-  boot_ne <- rep(NA_real_, nboot)
-  all_keys_union <- unique(unlist(kept_keys_list))
-  # sample indices within each interval independently (with replacement) and compute F, then regress
-  for (b in seq_len(nboot)) {
-    F_boot <- numeric(0)
-    t_boot <- numeric(0)
-    ns_boot <- numeric(0)
-    for (j in seq_along(other_gens)) {
-      g <- other_gens[j]
-      keys <- kept_keys_list[[as.character(g)]]
-      if (is.null(keys)) next
-      # sample indices
-      n_available <- length(keys)
-      samp_n <- min(bootSampleSize, n_available)
-      idx <- sample(seq_len(n_available), size = samp_n, replace = FALSE) #  SAMPLE WITHOUT REPLACEMENT - change to true if required
-      # get vectors for sampled loci
-      p0_all_sub   <- as.numeric(p0_all[keys])[idx]
-      pg_all_sub   <- as.numeric(af(sync, gen = g, repl = repl)[keys])[idx]
-      cov0_sub     <- as.numeric(cov0_all[keys])[idx]
-      covg_sub     <- as.numeric(coverage(sync, gen = g, repl = repl)[keys])[idx]
-      
-      sampVar_sub <- p0_all_sub*(1-p0_all_sub)/cov0_sub + pg_all_sub*(1-pg_all_sub)/covg_sub
-      sqcorr_sub <- (pg_all_sub - p0_all_sub)^2 - sampVar_sub
-      sqcorr_sub[sqcorr_sub < 0] <- 0
-      denom_sub <- p0_all_sub*(1-p0_all_sub)
-      good_sub <- denom_sub > 1e-8
-      if (sum(good_sub) < 10) {
-        F_boot <- c(F_boot, NA); t_boot <- c(t_boot, g - gen0); ns_boot <- c(ns_boot, sum(good_sub))
-      } else {
-        F_boot <- c(F_boot, mean(sqcorr_sub[good_sub] / denom_sub[good_sub], na.rm = TRUE))
-        t_boot <- c(t_boot, g - gen0)
-        ns_boot <- c(ns_boot, sum(good_sub))
-      }
+  # Bootstrap overall Ne
+  boot_ne_overall <- numeric(nboot)
+  for (b in 1:nboot) {
+    F_boot <- numeric(0); t_boot <- numeric(0); ns_boot <- numeric(0)
+    for (i in 1:length(res_list)) {
+      row <- res_list[[i]]
+      if (is.null(row)) next
+      boot_F <- 1 / (2 * row$Ne_median)  # use median Ne to compute F for resample
+      F_boot <- c(F_boot, boot_F)
+      t_boot <- c(t_boot, row$gen1 - row$gen0)
+      ns_boot <- c(ns_boot, row$nSites)
     }
-    # only fit if >1 point
-    if (sum(!is.na(F_boot)) >= 2) {
+    if (length(F_boot) >= 2) {
       fitb <- tryCatch(lm(F_boot ~ 0 + t_boot, weights = ns_boot), error = function(e) NULL)
       if (!is.null(fitb)) {
         s_b <- as.numeric(coef(fitb))
-        if (is.finite(s_b) && s_b > 0) boot_ne[b] <- 1 / (2 * s_b)
+        if (is.finite(s_b) && s_b > 0) boot_ne_overall[b] <- 1 / (2 * s_b)
       }
     }
   }
+  boot_ne_overall <- boot_ne_overall[!is.na(boot_ne_overall)]
+  Ne_overall_CI <- if(length(boot_ne_overall) > 0) quantile(boot_ne_overall, probs = c(0.025, 0.5, 0.975)) else c(NA, NA, NA)
   
-  boot_ne <- boot_ne[!is.na(boot_ne)]
-  out <- list(
-    gen0 = gen0,
-    t = t_vals,
-    F = F_vals,
-    nSites = nSites_vec,
-    lm = lm_fit,
-    Ne = Ne_hat,
-    Ne_boot = boot_ne,
-    Ne_CI = if (length(boot_ne) > 0) quantile(boot_ne, probs = c(0.025, 0.5, 0.975)) else NA
-  )
-  class(out) <- "NeTrajEstimate"
-  return(out)
+  # Combine interval results
+  res_intervals <- do.call(rbind, res_list)
+  
+  return(list(
+    intervals = res_intervals,
+    Ne_overall = Ne_overall,
+    Ne_overall_CI = Ne_overall_CI,
+    lm_overall = lm_fit
+  ))
 }
 
-# ----  CREATE WRAPPER -----
-summary.NeTrajEstimate <- function(object, ...) {
-  if (!inherits(object, "NeTrajEstimate"))
-    stop("Object must be of class 'NeTrajEstimate'")
-  
-  cat("Effective population size estimate from allele frequency trajectories\n")
-  cat("---------------------------------------------------------------\n")
-  cat("Baseline generation (gen0):", object$gen0, "\n")
-  cat("Number of intervals used:   ", length(object$t), "\n")
-  cat("Point estimate Ne:          ", round(object$Ne, 2), "\n")
-  
-  if (!is.null(object$Ne_CI) && !all(is.na(object$Ne_CI))) {
-    cat("95% bootstrap CI:           ",
-        paste(round(object$Ne_CI, 2), collapse = " – "), "\n")
-  } else {
-    cat("95% bootstrap CI:           Not available\n")
-  }
-  
-  # R² from regression
-  rsq <- summary(object$lm)$r.squared
-  cat("Regression R²:              ", round(rsq, 3), "\n")
-  
-  cat("\nIntervals (generations since gen0):\n")
-  df <- data.frame(
-    t = object$t,
-    F_hat = signif(object$F, 4),
-    nSites = object$nSites
-  )
-  print(df, row.names = FALSE)
-  
-  invisible(df)
-}
+# ---- PRINT OUTPUT ----
+res_combined <- estimateNe_combined(Sync)
 
-# ----OUTPUT RESULTS----
-# Create table and print
-resA <- estimateNe_from_trajectories_A(Sync)
-summary(resA)
+# Interval-specific Ne
+print(res_combined$intervals)
+
+# Overall regression-based Ne
+res_combined$Ne_overall
+res_combined$Ne_overall_CI
