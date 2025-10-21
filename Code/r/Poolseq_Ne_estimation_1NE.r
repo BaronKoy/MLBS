@@ -12,7 +12,7 @@ library(Rcpp)
 
 # ---- FUNCTIONS & DATASET ----
 # Load in sync file into variable 'Sync'
-Sync <- read.sync(file = '/home/baron/Documents/PhD/Data/pop_size_analysis/PoolSeq/cages/cage_2.sync', gen = c(2,4,8,12,20,28,36,44,56), repl = 1)
+Sync <- read.sync(file = '/home/baron/Documents/PhD/Data/pop_size_analysis/PoolSeq/cages/cage_3.sync', gen = c(2,4,8,12,20,28,36,44,56), repl = 1)
 
 # Load parameters from Sync into function
 # ---- FUNCTION TO ESTIMATE Ne PER INTERVAL ----
