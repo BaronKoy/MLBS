@@ -41,7 +41,7 @@ initialize() {
     initializeGenomicElement(g2, 4999, 5999);
     initializeGenomicElement(g3, 6000, 10999);
     initializeRecombinationRate(RHO);
-    // initializeMutationRate(0);
+    // initializeMutationRate(MU); // If ever required
 }
 
 // --------------------------- POPULATION SETUP -------------------------------
@@ -75,14 +75,16 @@ initialize() {
     }
 
 // Freeze populations and output starting vcf file
-4 late() {
+5 early() {
    
         // Stop migration
         p3.setMigrationRates(p2, 0.0);
 
         // Output a VCF sample of 700 individuals from p3
         outPath = "/data/home/bty565/simulations/outputs/FB/starting_pop_FB.vcf";
-        p3.outputVCFSample(700, keepMonomorphic=T, simplifyNucleotides=F, filePath = outPath);
+        sim.outputFull();
+        ind = p3.sampleIndividuals(700);
+        ind.outputIndividualsToVCF(filePath = outPath, simplifyNucleotides=T);
 
         // End simulation
         sim.simulationFinished();
