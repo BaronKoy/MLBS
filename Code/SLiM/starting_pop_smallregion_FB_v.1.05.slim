@@ -4,7 +4,7 @@
 // Using fixed DGRP2 lines: 14 FB + 14 MB
 // 700 per generation line (50 x each of 14 lines)
 // Neutral model with uniform recombination and mutation rates
-// Author: Baron Koylass | Date: 2025-10-23 | Version 1.04
+// Author: Baron Koylass | Date: 2025-10-23 | Version 1.05
 // Requires: SLiM 5.0
 // -----------------------------------------------------------------------------
 
@@ -58,23 +58,14 @@ initialize() {
     cat("DGRP2 VCFs loaded successfully for p1 and p2.\n");
 }
 
-// ----------------------- GROWTH AND CAGE TRANSFER ----------------------------
-// Early() block for generation-specific growth and cage formation
+// Late() block to set up migration into cage population p3 - 9:1 ratio
 4 early() {
 
-        // Grow both lines to 250 individuals each (neutral expansion)
-        p1.setSubpopulationSize(250);
-        p2.setSubpopulationSize(250);
-    }
-
-// Late() block for generation-specific output
-4 late() {
-
         // Define cage composition
-        defineConstant("CAGE_SIZE", 250);
+        defineConstant("CAGE_SIZE", 700);
         defineConstant("PROP_FB", 0.9);
-        n1 = asInteger(PROP_FB * CAGE_SIZE); // 225
-        n2 = asInteger(CAGE_SIZE - n1); // 25
+        n1 = asInteger(PROP_FB * CAGE_SIZE); // 630
+        n2 = asInteger(CAGE_SIZE - n1); // 70
 
         // Create p3 by sampling n1 individuals FROM p1
         sim.addSubpopSplit("p3", n1, p1);
@@ -84,17 +75,14 @@ initialize() {
     }
 
 // Freeze populations and output starting vcf file
-5 early() {
+4 late() {
    
         // Stop migration
         p3.setMigrationRates(p2, 0.0);
-    }
 
-5 late() {
-
-        // Output a VCF sample of 250 individuals from p3
+        // Output a VCF sample of 700 individuals from p3
         outPath = "/data/home/bty565/simulations/outputs/FB/starting_pop_FB.vcf";
-        p3.outputVCFSample(250, filePath = outPath);
+        p3.outputVCFSample(700, keepMonomorphic=T, simplifyNucleotides=F, filePath = outPath);
 
         // End simulation
         sim.simulationFinished();
