@@ -4,7 +4,7 @@
 // Using fixed DGRP2 lines: 14 FB + 14 MB
 // 700 per generation line (50 x each of 14 lines)
 // Neutral model with uniform recombination and mutation rates
-// Author: Baron Koylass | Date: 2025-10-23 | Version 1.05
+// Author: Baron Koylass | Date: 2025-10-27 | Version 1.06
 // Requires: SLiM 5.0
 // -----------------------------------------------------------------------------
 
@@ -60,26 +60,30 @@ initialize() {
 
 // Late() block to set up migration into cage population p3 - 9:1 ratio
 4 early() {
+    defineConstant("CAGE_SIZE", 700);
+    defineConstant("PROP_FB", 0.9);
+    n1 = asInteger(PROP_FB * CAGE_SIZE); // 630
+    n2 = CAGE_SIZE - n1;                 // 70
 
-        // Define cage composition
-        defineConstant("CAGE_SIZE", 700);
-        defineConstant("PROP_FB", 0.9);
-        n1 = asInteger(PROP_FB * CAGE_SIZE); // 630
-        n2 = asInteger(CAGE_SIZE - n1); // 70
+    // Step 1: create a temporary subpopulation with one dummy individual
+    sim.addSubpop("p3", 1);
 
-        // Create p3 by sampling n1 individuals FROM p1
-        sim.addSubpopSplit("p3", n1, p1);
+    // Step 2: sample from p1 and p2
+    inds1 = p1.sampleIndividuals(n1);
+    inds2 = p2.sampleIndividuals(n2);
 
-        // Set temporary migration from p2 into p3
-        p3.setMigrationRates(p2, n2 / CAGE_SIZE); // 0.1
-    }
+    // Step 3: move them into p3
+    p3.takeMigrants(c(inds1, inds2));
 
-// Freeze populations and output starting vcf file
-5 early() {
-   
-        // Stop migration
-        p3.setMigrationRates(p2, 0.0);
+    // Step 4: remove the placeholder individual
+    p3.individuals[0].setValue("kill", 1);  // mark for removal
+    p3.removeIndividuals(p3.individuals[p3.individuals.tagValue("kill") == 1]);
 
+    cat("p3 formed with ", p3.individualCount, " individuals (",
+        n1, " from p1, ", n2, " from p2).\n");
+}
+
+4 late() {
         // Output a VCF sample of 700 individuals from p3
         outPath = "/data/home/bty565/simulations/outputs/FB/starting_pop_FB.vcf";
         sim.outputFull();
