@@ -1,27 +1,27 @@
 // -----------------------------------------------------------------------------
-// Simulation of Cage Experiment (Reuter Lab, 2021) — Part 1
-// Region: 3R:18,515,500-18,526,500 (~11 kb)
-// Using fixed DGRP2 lines: 14 FB + 14 MB
-// 700 per generation line (50 x each of 14 lines)
-// Neutral model with uniform recombination and mutation rates
-// Author: Baron Koylass | Date: 2025-10-28| Version 1.11
+// Cage experiment — WF, 9:1 founding, 3 generations, output all mutations
+// Version: 1.11
 // -----------------------------------------------------------------------------
 
 initialize() {
-    // ----------------- RANDOM SEED -----------------
-    setSeed(20251028);  // fixed seed for reproducibility
+    // ---------- Command-line seed override ----------
+    // You can run: slim -d SEED=20251029 this_script.slim
+    if (!exists("SEED")) {
+        SEED = 20251028;
+    }
+    setSeed(SEED);
 
-    // ----------------- WF MODEL -----------------
+    // ---------- WF & nucleotide options ----------
     initializeSLiMModelType("WF");
     initializeSLiMOptions(nucleotideBased = T);
     initializeTreeSeq();
 
-    // ----------------- ANCESTRAL REFERENCE -----------------
+    // ---------- Ancestral reference ----------
     initializeAncestralNucleotides(
         "/data/home/bty565/simulations/inputs/fasta/GCA_000001215.4_focal11kb.fa"
     );
 
-    // ----------------- MUTATION & RECOMBINATION -----------------
+    // ---------- Mutation & recombination ----------
     defineConstant("RHO", 1.71642e-8);
 
     initializeMutationTypeNuc("m1", 0.5, "f", 0.0);
@@ -57,31 +57,32 @@ initialize() {
 
 // --------------------------- 9:1 MIXING -------------------------------------
 2 early() {
-    // p3 receives 90% gametes from p1, 10% from p2
+    // p3 receives 90% gametes from p1, 10% from p2 (non-self-referential)
     p3.setMigrationRates(c(p1, p2), c(0.9, 0.1));
 
+    // If p1/p2 should be closed, omit lines that set their migration rates.
+    // (You mentioned you removed them earlier because SLiM complained.)
     catn("Generation 2: p3 receives 90% gametes from p1, 10% from p2.");
 }
 
 // --------------------------- STOP MIGRATION ---------------------------------
 3 early() {
-    // Stop migration to p3
+    // Stop migration to p3 so it reproduces independently for generation 3
     p3.setMigrationRates(c(p1, p2), c(0.0, 0.0));
     catn("Generation 3: Migration stopped. p3 reproduces independently.");
 }
 
-// -------------------------- OUTPUT & END ------------------------------------
+// -------------------------- OUTPUT: all mutations ----------------------------
 3 late() {
-    defineConstant("OUT_PATH", "/data/home/bty565/simulations/outputs/FB/starting_pop_FB.vcf");
+    // SLiM-native file containing all mutations (fixed, lost, polymorphic)
+    defineConstant("OUT_MUTS", "/data/home/bty565/simulations/outputs/FB/starting_pop_FB_mutations.txt");
 
-    ind = p3.sampleIndividuals(700);
-    ind.outputIndividualsToVCF(filePath = OUT_PATH,
-                            simplifyNucleotides = T,
-                            keepFixed = T);
+    // Write all mutations (including fixed and lost)
+    sim.outputMutations(sim.mutations, OUT_MUTS, F);
 
     catn("--------------------------------------------------");
     catn("Simulation complete.");
-    catn("p3 exported to: " + OUT_PATH);
+    catn("All mutations (including fixed/lost) exported to: " + OUT_MUTS);
     catn("Random seed used: " + asString(getSeed()));
     catn("--------------------------------------------------");
 
