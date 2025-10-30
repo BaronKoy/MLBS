@@ -61,8 +61,7 @@ initialize() {
     // p3 receives 90% gametes from p1, 10% from p2 (non-self-referential)
     p3.setMigrationRates(c(p1, p2), c(0.9, 0.1));
 
-    catn("Generation 4: p1 & p2 mix in their isolated populations for 3 generations \n 
-    p3 receives 90% gametes from p1, 10% from p2.");
+    catn("Generation 4: p1 & p2 mix in their isolated populations for 3 generations p3 receives 90% gametes from p1, 10% from p2.");
 }
 
 // --------------------------- STOP MIGRATION ---------------------------------
@@ -75,7 +74,7 @@ initialize() {
 // -------------------------- OUTPUT: all mutations & full output ----------------------------
 5 late() {
     defineConstant("OUT_MUTS", "/data/home/bty565/simulations/outputs/FB/starting_pop_FB_mutations.txt");
-    defineConstant("OUT_FULL", "/data/home/bty565/simulations/outputs/FB/starting_pop_FB_full.txt");
+    defineConstant("OUT_FULL", "/data/home/bty565/simulations/outputs/FB/starting_pop_FB_genotypes.txt");
 
     // Write all mutations (including fixed/lost)
     sim.outputMutations(sim.mutations, OUT_MUTS, F);
@@ -89,15 +88,6 @@ initialize() {
     catn("Full population state written to: " + OUT_FULL);
     catn("Random seed used: " + asString(getSeed()));
     catn("--------------------------------------------------");
-
-// Human-readable summary of all mutations
-outf = outputFile("/data/home/bty565/simulations/outputs/FB/starting_pop_FB_summary.txt", append=F);
-outf.write("ID\tPosition\tType\tOriginGen\tCount\tIsFixed\n");
-for (mut in sim.mutations) {
-    count = sum(sim.subpopulations.individuals.genomes.containsMutations(mut));
-    outf.write(mut.id + "\t" + mut.position + "\t" + mut.mutationType.name + "\t" +
-               mut.originGeneration + "\t" + count + "\t" + (count == sim.subpopulations.genomeCount) + "\n");
-}
-outf.close();
+    // Finish simulation
     sim.simulationFinished();
 }
